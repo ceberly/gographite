@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-import "log"
-
 var ErrHelperInvalidPathLength = errors.New("Invalid Path Length")
 
 func ParseUrl(url *url.URL) ([]string, int64, float32, error) {
