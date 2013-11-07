@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -11,10 +13,29 @@ import (
 )
 
 func main() {
-	graphite, err := graphite.NewWithConnection("tcp", ":2003")
+
+	var (
+		listen  = flag.Int("l", 8080, "port to listen on.")
+		net     = flag.String("n", "tcp", "network type to connect to carbon-cache server process: 'tcp', 'udp', etc.")
+		addr    = flag.String("a", "127.0.0.1", "address of carbon-cache server process.")
+		port    = flag.Int("p", 2003, "port of carbon-cache server process.")
+		verbose = flag.Bool("v", false, "be verbose")
+	)
+
+	switch *net {
+	case "tcp", "udp":
+	default:
+		log.Fatal("Please supply a valid network protocol (tcp or udp)")
+	}
+
+	flag.Parse()
+
+	graphite, err := graphite.NewWithConnection(*net, fmt.Sprintf("%s:%d", *addr, *port))
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	graphite.Verbose = *verbose
 
 	// This should be handled by your webserver, but is super annoying when testing.
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +54,12 @@ func main() {
 		graphite.Send(key, time, value)
 	})
 
-	err = http.ListenAndServe(":8080", nil)
+	if *verbose {
+		log.Printf("Starting server process on port %d", *listen)
+		log.Printf("Connecting to carbon-cache process at (%s) %s:%d", *net, *addr, *port)
+	}
+
+	err = http.ListenAndServe(fmt.Sprintf(":%d", *listen), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
