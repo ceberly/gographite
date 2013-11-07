@@ -9,24 +9,34 @@ import (
 
 type GraphiteSender struct {
 	conn *net.Conn
+	addr string
+	net  string // "tcp" "udp" etc.
 }
 
-func NewWithConnection(addr string) (*GraphiteSender, error) {
-	s := new(GraphiteSender)
+func NewWithConnection(net, addr string) (*GraphiteSender, error) {
+	g := GraphiteSender{addr: addr, net: net}
 
-	c, err := net.Dial("tcp", addr)
+	err := g.reconnect()
 	if err != nil {
 		return nil, err
 	}
 
-	s.conn = &c
+	return &g, nil
+}
 
-	return s, nil
+func (g *GraphiteSender) reconnect() error {
+	c, err := net.Dial(g.net, g.addr)
+	if err != nil {
+		return err
+	}
+
+	g.conn = &c
+
+	return nil
 }
 
 func (g *GraphiteSender) Send(key []string, time int64, value float32) {
 	k := strings.Join(key, ".")
-	log.Printf("%v %s %f %d", key, k, value, time)
 	_, err := fmt.Fprintf(*(g.conn), "%s %f %d\n", k, value, time)
 	if err != nil {
 		// retry connection?
