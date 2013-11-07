@@ -1,8 +1,8 @@
 package helper
 
 import (
-	"testing"
 	"net/url"
+	"testing"
 )
 
 func TestParseUrl(t *testing.T) {
@@ -21,7 +21,6 @@ func TestParseUrl(t *testing.T) {
 			1383844036,
 		},
 	}
-
 
 	for i, tt := range tests {
 		u, e := url.ParseRequestURI(tt.url)

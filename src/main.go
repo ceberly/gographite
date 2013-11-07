@@ -16,7 +16,7 @@ import (
 func main() {
 	// host:8080/bucket/<optional subbuckets>/unix_timestamp/value
 	graphite, err := graphite.NewWithConnection(":2003")
-	if (err != nil) {
+	if err != nil {
 		log.Fatal(err)
 	}
 
