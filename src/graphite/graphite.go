@@ -11,6 +11,8 @@ type GraphiteSender struct {
 	conn *net.Conn
 	addr string
 	net  string // "tcp" "udp" etc.
+
+	Verbose bool
 }
 
 func NewWithConnection(net, addr string) (*GraphiteSender, error) {
@@ -37,6 +39,10 @@ func (g *GraphiteSender) reconnect() error {
 
 func (g *GraphiteSender) Send(key []string, time int64, value float32) {
 	k := strings.Join(key, ".")
+	if g.Verbose {
+		log.Printf("sending %s %f %d", k, value, time)
+	}
+
 	_, err := fmt.Fprintf(*(g.conn), "%s %f %d\n", k, value, time)
 	if err != nil {
 		// retry connection?
