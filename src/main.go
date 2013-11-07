@@ -3,9 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"net/url"
-	"strconv"
-	"strings"
 )
 
 import (
@@ -14,12 +11,17 @@ import (
 )
 
 func main() {
-	// host:8080/bucket/<optional subbuckets>/unix_timestamp/value
-	graphite, err := graphite.NewWithConnection(":2003")
+	graphite, err := graphite.NewWithConnection("tcp", ":2003")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// This should be handled by your webserver, but is super annoying when testing.
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", 404)
+	})
+
+	// host:8080/bucket/<optional subbuckets>/unix_timestamp/value
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		key, time, value, err := helper.ParseUrl(r.URL)
 		if err != nil {
